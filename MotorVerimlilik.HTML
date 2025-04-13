@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Motor Verimlilik Hesaplayıcı</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0 16px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 17px;
+      font-weight: normal;
+      color: #222;
+      background: #eef5ff;
+      padding: 15px;
+      border-radius: 10px;
+      line-height: 1.6;
+    }
+
+    .explanation {
+      margin-top: 25px;
+      padding: 15px;
+      background-color: #fffde6;
+      border: 1px solid #ffdb99;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    .highlight {
+      font-weight: bold;
+      color: #1a73e8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Motor Verimlilik ve Boşta Çalışma Hesabı</h2>
+
+    <label>Motor Gücü (kW):</label>
+    <input type="number" id="kw" step="0.01">
+
+    <label>Maksimum Akım (Amper):</label>
+    <input type="number" id="maxAmper" step="0.01">
+
+    <label>Frekans (Hz):</label>
+    <input type="number" id="hz">
+
+    <label>Dönüş Hızı (RPM):</label>
+    <input type="number" id="rpm">
+
+    <label>Cos φ (Güç Faktörü):</label>
+    <input type="number" id="cosq" step="0.01" min="0" max="1">
+
+    <label>Şu An Çekilen Akım (Amper):</label>
+    <input type="number" id="cekilenAmper" step="0.01">
+
+    <button onclick="hesapla()">Hesapla</button>
+
+    <div class="result" id="sonuc"></div>
+
+    <div class="explanation">
+      <strong>📘 Motor Yükü & Verimlilik Açıklaması:</strong><br><br>
+      <ul>
+        <li><strong>0% - 25%:</strong> Çok verimsiz (boşta çalışma)</li>
+        <li><strong>25% - 50%:</strong> Düşük verimlilik</li>
+        <li><strong>50% - 100%:</strong> <span class="highlight">İdeal çalışma aralığı</span></li>
+        <li><strong>100% üstü:</strong> Aşırı yük, verim düşer, motor zarar görebilir</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    function hesapla() {
+      // Temizle
+      document.getElementById("sonuc").innerHTML = "";
+
+      const kw = parseFloat(document.getElementById("kw").value);
+      const maxAmper = parseFloat(document.getElementById("maxAmper").value);
+      const hz = parseFloat(document.getElementById("hz").value);
+      const rpm = parseFloat(document.getElementById("rpm").value);
+      const cosq = parseFloat(document.getElementById("cosq").value);
+      const cekilenAmper = parseFloat(document.getElementById("cekilenAmper").value);
+
+      if (isNaN(kw) || isNaN(maxAmper) || isNaN(hz) || isNaN(rpm) || isNaN(cosq) || isNaN(cekilenAmper)) {
+        document.getElementById("sonuc").innerHTML = "❗ Lütfen tüm alanları eksiksiz doldurun.";
+        return;
+      }
+
+      const verimYuzde = (cekilenAmper / maxAmper) * 100;
+      const gerilim = 400; // varsayılan trifaze sistem gerilimi
+      const aktifGucKw = (Math.sqrt(3) * gerilim * cekilenAmper * cosq) / 1000;
+
+      let verimDurumu = "";
+      if (verimYuzde < 25) {
+        verimDurumu = "⚠️ Çok verimsiz (boşta çalışma)";
+      } else if (verimYuzde < 50) {
+        verimDurumu = "⚠️ Düşük verimlilik";
+      } else if (verimYuzde <= 100) {
+        verimDurumu = "✅ İdeal çalışma aralığında";
+      } else {
+        verimDurumu = "❗ Aşırı yük! Motor zarar görebilir.";
+      }
+
+      let mesaj = `
+        🔌 <strong>Çekilen Akım:</strong> ${cekilenAmper.toFixed(2)} A<br>
+        📊 <strong>Verimlilik:</strong> %${verimYuzde.toFixed(1)} – <strong>${verimDurumu}</strong><br>
+        ⚡ <strong>Anlık Tahmini Güç Tüketimi:</strong> ${aktifGucKw.toFixed(2)} kW
+      `;
+
+      document.getElementById("sonuc").innerHTML = mesaj;
+    }
+  </script>
+</body>
+</html>
